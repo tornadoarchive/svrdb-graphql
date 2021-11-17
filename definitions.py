@@ -14,9 +14,9 @@ class Event:
     magnitude: float
     fatalities: int
     injuries: int
-    # datetime: datetime
-    # loss: float
-    # closs: float 
+    datetime: datetime
+    loss: float
+    closs: float 
 
 
 @strawberry.type 
@@ -30,7 +30,7 @@ class Tornado(Event):
 
     @classmethod
     def from_model(cls, model: TornadoModel):
-        kw = {k: _extract_item(model, k) for k in TornadoSegModel.aliases}
+        kw = {k: _extract_item(model, k) for k in _get_attrs(TornadoSegModel)}
         return cls(**kw)
 
 
@@ -41,7 +41,7 @@ class Hail(Event):
 
     @classmethod
     def from_model(cls, model: HailModel):
-        kw = {k: _extract_item(model, k) for k in HailModel.aliases}
+        kw = {k: _extract_item(model, k) for k in _get_attrs(HailModel)}
         return cls(**kw)
 
 
@@ -52,7 +52,7 @@ class Wind(Event):
 
     @classmethod
     def from_model(cls, model: WindModel):
-        kw = {k: _extract_item(model, k) for k in WindModel.aliases}
+        kw = {k: _extract_item(model, k) for k in _get_attrs(WindModel)}
         return cls(**kw)
 
 
@@ -61,3 +61,7 @@ def _extract_item(model, k):
     if k.lower() == 'state' and isinstance(item, list):
         return ', '.join(item)
     return item
+
+
+def _get_attrs(model_cls):
+    return [attr for attr in model_cls.aliases] + ['datetime', 'loss', 'closs']

@@ -6,7 +6,6 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
     POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
     POETRY_VERSION=1.1
 
@@ -16,6 +15,7 @@ WORKDIR /app
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
 RUN pip3 install "poetry==$POETRY_VERSION"
+RUN poetry config virtualenvs.create false
 
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-dev --no-root
@@ -23,4 +23,4 @@ RUN poetry install --no-dev --no-root
 COPY . .
 
 EXPOSE 8000
-CMD . /app/.venv/bin/activate && strawberry server app
+CMD ["strawberry", "server", "app"]

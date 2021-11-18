@@ -1,10 +1,10 @@
 import strawberry
 from datetime import datetime
 
-from svrdb.tornado import Tornado as TornadoModel
-from svrdb.tornado import TornadoSegment as TornadoSegModel
-from svrdb.hail import Hail as HailModel
-from svrdb.wind import Wind as WindModel
+from svrdb.loader.tornado import Tornado as TornadoModel
+from svrdb.loader.tornado import TornadoSegment as TornadoSegModel
+from svrdb.loader.hail import Hail as HailModel
+from svrdb.loader.wind import Wind as WindModel
 
 
 @strawberry.interface

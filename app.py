@@ -1,7 +1,7 @@
 import strawberry
-from definitions import Tornado, Wind, Hail
-from svrdb import TornadoList, WindList, HailList
-from db import setup_db
+from svrdb.definitions import Tornado
+from svrdb.loader import TornadoList
+from svrdb import setup_db
 
 
 @strawberry.type

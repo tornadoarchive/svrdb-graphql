@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
 from datetime import datetime
 
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from .db import Base
+Base = declarative_base()
 
 
 class SPCEvent:

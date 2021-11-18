@@ -1,1 +1,1 @@
-from .db import setup_db
+from .setup import setup_db

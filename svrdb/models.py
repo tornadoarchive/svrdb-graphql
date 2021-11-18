@@ -1,8 +1,11 @@
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, create_engine
 from datetime import datetime
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+
+db_url = 'mysql+pymysql://user:password@db:3306/spc'
+engine = create_engine(db_url, echo=True, future=True)
 
 Base = declarative_base()
 

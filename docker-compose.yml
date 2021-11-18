@@ -8,6 +8,8 @@ services:
       - ./:/app
     depends_on:
       - db
+    environment:
+      - SEED_DB
   db:
     image: mysql:8.0
     restart: always

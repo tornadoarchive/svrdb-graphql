@@ -1,7 +1,13 @@
+import os
+
 import strawberry
+
+from seed import seed
 from svrdb.definitions import Tornado
 from svrdb.loader import TornadoList
-from svrdb import setup_db
+
+# initialize DB
+from svrdb import models
 
 
 @strawberry.type
@@ -29,5 +35,3 @@ class Query:
 
 
 schema = strawberry.Schema(query=Query)
-
-setup_db()

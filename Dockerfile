@@ -22,4 +22,4 @@ RUN poetry install --no-dev --no-root
 COPY . .
 
 EXPOSE 8000
-CMD ["./wait-for-it.sh", "db:3306", "--", "strawberry", "server", "app"]
+CMD ./run.sh

@@ -1,6 +1,7 @@
 import strawberry
 from definitions import Tornado, Wind, Hail
 from svrdb import TornadoList, WindList, HailList
+from db import setup_db
 
 
 @strawberry.type
@@ -28,3 +29,5 @@ class Query:
 
 
 schema = strawberry.Schema(query=Query)
+
+setup_db()

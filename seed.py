@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 import pandas as pd
 import numpy as np
 
-from svrdb.models import County, Base, engine, Hail
+from svrdb.models import County, Base, engine, Hail, Wind
 
 
 def seed(recreate_tables=True):
@@ -16,6 +16,7 @@ def seed(recreate_tables=True):
 
     county_ref = seed_counties(session)
     seed_hail(session, county_ref)
+    seed_wind(session, county_ref)
 
     session.commit()
 
@@ -36,32 +37,41 @@ def seed_counties(session):
 
 
 def seed_hail(session, county_ref):
+    file = _get_data_file('1955-2019_hail.csv')
+    records = _common_generate_records(county_ref, file)
+    session.bulk_save_objects([Hail(id=i, **rec) for i, rec in enumerate(records, start=1)])
+
+
+def seed_wind(session, county_ref):
+    file = _get_data_file('1955-2019_wind.csv')
+    records = _common_generate_records(county_ref, file)
+    session.bulk_save_objects([Wind(id=i, **rec) for i, rec in enumerate(records, start=1)])
+
+
+def _common_generate_records(county_ref, file):
     columns = {
-        'state':'st',
-        'magnitude':'mag',
-        'fatalities':'fat',
-        'injuries':'inj',
-        'lat':'slat',
-        'lon':'slon',
+        'state': 'st',
+        'magnitude': 'mag',
+        'fatalities': 'fat',
+        'injuries': 'inj',
+        'lat': 'slat',
+        'lon': 'slon',
         'datetime': 'datetime',
         'loss': 'loss',
         'closs': 'closs'
     }
+    df = pd.read_csv(file, parse_dates=[['date', 'time']], index_col=False)
 
-    file = _get_data_file('1955-2019_hail.csv')
-    haildf = pd.read_csv(file, parse_dates=[['date', 'time']], index_col=False)
+    dts = pd.to_timedelta(df['tz'].apply(lambda tz: 0 if tz == 9 else 6), unit='H')
+    converted = df['date_time'] + dts
+    df['datetime'] = converted
 
-    dts = pd.to_timedelta(haildf['tz'].apply(lambda tz: 0 if tz == 9 else 6), unit='H')
-    converted = haildf['date_time'] + dts
-    haildf['datetime'] = converted
-
-    subset = haildf[['stf', 'f1'] + list(columns.values())]
+    subset = df[['stf', 'f1'] + list(columns.values())]
     subset = subset.merge(county_ref, left_on=['stf', 'f1'], right_on=['state_fips', 'county_fips'], how='left')
     subset = subset[list(columns.values()) + ['county_id']]
     subset.columns = list(columns.keys()) + ['county_id']
 
-    records = subset.replace({np.nan: None}).to_dict(orient='records')
-    session.bulk_save_objects([Hail(id=i, **rec) for i, rec in enumerate(records, start=1)])
+    return subset.replace({np.nan: None}).to_dict(orient='records')
 
 
 def _get_data_file(filename):

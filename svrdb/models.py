@@ -12,7 +12,7 @@ engine = create_engine(db_url, echo=True, future=True)
 Base = declarative_base()
 
 
-class SPCEvent:
+class _SPCEvent:
     id: int = Column(Integer, primary_key=True)
     datetime: datetime = Column(DateTime, index=True, nullable=False)
     state: str = Column(String(255), index=True, nullable=False)
@@ -32,10 +32,21 @@ class County(Base):
     county: str = Column(String(255), nullable=False)
 
 
-class Hail(Base, SPCEvent):
+class Hail(Base, _SPCEvent):
     __tablename__ = 'hail'
 
     magnitude: float = Column(Numeric(4, 2), nullable=False, index=True)
+    lat: float = Column(Numeric(4, 2), nullable=False, index=True)
+    lon: float = Column(Numeric(5, 2), nullable=False, index=True)
+    # a lot of records have missing county data
+    county_id: int = Column(Integer, ForeignKey('county.id'), nullable=True)
+    county: County = relationship('County')
+
+
+class Wind(Base, _SPCEvent):
+    __tablename__ = 'wind'
+
+    magnitude: float = Column(Integer, nullable=False, index=True)
     lat: float = Column(Numeric(4, 2), nullable=False, index=True)
     lon: float = Column(Numeric(5, 2), nullable=False, index=True)
     # a lot of records have missing county data

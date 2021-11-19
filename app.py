@@ -1,8 +1,5 @@
-import os
-
 import strawberry
 
-from seed import seed
 from svrdb.definitions import Tornado
 from svrdb.loader import TornadoList
 

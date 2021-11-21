@@ -1,10 +1,11 @@
 import strawberry
 
-from svrdb.definitions import Tornado
-from svrdb.loader import TornadoList
+from typing import List
 
-# initialize DB
-from svrdb import models
+from svrdb.definitions import Tornado, Hail
+from svrdb.loader import TornadoList
+from svrdb.models import Hail as HailModel
+from svrdb.query import query_events
 
 
 @strawberry.type
@@ -14,7 +15,7 @@ class Query:
     @strawberry.field
     def tornado(self, 
                 state: str = None,
-                magnitude: int = -1) -> list[Tornado]:
+                magnitude: int = -1) -> List[Tornado]:
 
         if Query._tordb is None:
             Query._tordb = TornadoList.load_db()
@@ -29,6 +30,18 @@ class Query:
 
         query_result = Query._tordb.search(**search_kw)
         return[Tornado.from_model(tor) for tor in query_result]
+
+    @strawberry.field
+    def hail(self,
+             state: str = None,
+             magnitude: float = None) -> List[Hail]:
+
+        results = query_events(
+            model=HailModel,
+            query=dict(state=state, magnitude=magnitude)
+        )
+
+        return [Hail.from_model(mdl) for mdl in results]
 
 
 schema = strawberry.Schema(query=Query)

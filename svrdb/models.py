@@ -4,12 +4,16 @@ from sqlalchemy import (
 from datetime import datetime
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 
 db_url = 'mysql+pymysql://user:password@db:3306/spc'
 engine = create_engine(db_url, echo=True, future=True)
 
 Base = declarative_base()
+
+
+def get_session():
+    return Session(bind=engine, future=True)
 
 
 class _SPCEvent:

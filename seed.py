@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 import pandas as pd
 import numpy as np
 
-from svrdb.models import County, Base, engine, Hail, Wind
+from svrdb.models import County, Base, engine, Hail, Wind, get_session
 
 
 def seed(recreate_tables=True):
@@ -12,13 +12,12 @@ def seed(recreate_tables=True):
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
 
-    session = Session(bind=engine)
+    with get_session() as session:
+        county_ref = seed_counties(session)
+        seed_hail(session, county_ref)
+        seed_wind(session, county_ref)
 
-    county_ref = seed_counties(session)
-    seed_hail(session, county_ref)
-    seed_wind(session, county_ref)
-
-    session.commit()
+        session.commit()
 
 
 def seed_counties(session):

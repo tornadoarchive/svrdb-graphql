@@ -24,7 +24,7 @@ class Hail:
     @classmethod
     def fetch(cls, filter: HailFilter = None):
         if filter is not None:
-            queried = fetch_events(HailModel, filter.to_dict())
+            queried = fetch_events(HailModel, filter.to_query())
             return [cls._from_model(event) for event in queried]
         return []
 

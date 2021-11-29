@@ -68,10 +68,10 @@ class Wind(Base, _PointEvent):
 class _PathEvent(_SPCEvent):
     length: float = Column(Numeric(5, 2), nullable=False)
     width: float = Column(Numeric(6, 2), nullable=False)
-    start_lat: float = Column(Numeric(4, 2), nullable=False, index=True)
-    start_lon: float = Column(Numeric(5, 2), nullable=False, index=True)
-    end_lat: float = Column(Numeric(4, 2), nullable=False, index=True)
-    end_lon: float = Column(Numeric(5, 2), nullable=False, index=True)
+    start_lat: float = Column(Numeric(6, 4), nullable=False, index=True)
+    start_lon: float = Column(Numeric(7, 4), nullable=False, index=True)
+    end_lat: float = Column(Numeric(6, 4), nullable=False)
+    end_lon: float = Column(Numeric(7, 4), nullable=False)
 
 
 class Tornado(Base, _PathEvent):
@@ -79,13 +79,7 @@ class Tornado(Base, _PathEvent):
     magnitude: float = Column(Integer, nullable=True, index=True)
     magnitude_unk: bool = Column(Boolean, nullable=False)
 
-    segments = relationship('TornadoSegment')
-
-
-tornado_segment_counties = Table('tornado_segment_county', Base.metadata,
-    Column('tornado_segment_id', ForeignKey('tornado_segment.id')),
-    Column('county_id', ForeignKey('county.id'))
-)
+    segments = relationship('TornadoSegment', backref='tornado')
 
 
 class TornadoSegment(Base, _PathEvent):
@@ -93,6 +87,14 @@ class TornadoSegment(Base, _PathEvent):
     magnitude: float = Column(Integer, nullable=True, index=True)
     magnitude_unk: bool = Column(Boolean, nullable=False)
 
-    tornado_id: int = Column(Integer, ForeignKey('tornado.id'))
-    counties: List[County] = relationship('County', secondary=tornado_segment_counties)
+    tornado_id: int = Column(Integer, ForeignKey('tornado.id'), nullable=False)
+    counties = relationship('TornadoSegmentCounty')
 
+
+class TornadoSegmentCounty(Base):
+    __tablename__ = 'tornado_segment_county'
+    id: int = Column(Integer, primary_key=True)
+    tornado_segment_id: int = Column(ForeignKey('tornado_segment.id'), nullable=False)
+    county_id: int = Column(ForeignKey('county.id'), nullable=False)
+    county_order: int = Column(Integer, nullable=False)
+    county: County = relationship('County')

@@ -3,7 +3,10 @@ import os
 import pandas as pd
 import numpy as np
 
-from svrdb.models import County, Base, engine, Hail, Wind, get_session, Tornado, TornadoSegment, TornadoSegmentCounty
+from svrdb.models import (
+    County, Base, engine, Hail, Wind, get_session, Tornado,
+    TornadoSegment, TornadoSegmentCounty
+)
 
 
 def seed(recreate_tables=True):
@@ -39,7 +42,7 @@ def seed_counties(session):
 def seed_tornadoes(session, county_ref):
     file = _get_data_file('1950-2019_all_tornadoes.csv')
     df = pd.read_csv(file, parse_dates=[['date', 'time']], index_col=False)
-    _correct_tor_records(df)
+    df = _correct_tor_records(df)
 
     dts = pd.to_timedelta(df['tz'].apply(lambda tz: 0 if tz == 9 else 6), unit='H')
     converted = df['date_time'] + dts
@@ -95,11 +98,13 @@ def seed_tornadoes(session, county_ref):
 
     ## save tornado segments
     seg_df = df[is_segment & ~is_continuation].replace({np.nan: None})
-
     # associate with parent tor id
-    seg_df_temp = seg_df.merge(tor_df, on=['yr', 'om'], how='left')
-    seg_df['tornado_id'] = seg_df_temp['id']
+    seg_df = seg_df.merge(tor_df[['yr', 'om', 'id']], how='left').rename(columns={'id': 'tornado_id'})
     seg_df['id'] = range(1, len(seg_df) + 1)
+
+    if seg_df.tornado_id.isnull().any():
+        # there are orphan segments or something wrong with the DB. Time to correct the data
+        raise ValueError('Segment mismatch with tornado! Re-evaluate the data')
 
     seg_records_df = seg_df[list(columns.values()) + ['id', 'tornado_id']]
     seg_records_df.columns = list(columns.keys()) + ['id', 'tornado_id']
@@ -140,24 +145,64 @@ def seed_tornadoes(session, county_ref):
 
 
 def _correct_tor_records(df):
-    # TODO: implement
-    pass
+    df = df.copy()
+
+    # county segment entered as an extra tornado in the FL Panhandle on 3/15/01
+    # see https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=5238186 and
+    # https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=5238187
+    df.drop(df[(df.om == 56) & (df.date_time == '2001-03-15 03:40:00')].index, inplace=True)
+
+    # dup om's on legitimate separate tornadoes -- this breaks my join condition
+    df.loc[(df.om == 506) & (df.date_time == '2002-04-11 16:35:00'), 'om'] = df[df.yr == 2002].om.max() + 1
+    df.loc[(df.om == 252) & (df.date_time == '2010-05-10 15:03:00'), 'om'] = df[df.yr == 2010].om.max() + 1
+
+    # duplicate tornado in May 2015
+    try:
+        df.drop(df[(df.om == 610626) & (df.yr == 2015)].index[1], inplace=True)
+    except IndexError:
+        # if no dup exists because subsequent SPC files were fixed, we're good
+        pass
+
+    # mislabeled duplicate om's -- found by @tsupinie
+    df.loc[(df.om == 9999) & (df.yr == 1995) & (df.st == 'IA'), 'om'] = 9998
+    df.loc[(df.om == 576455) & (df.yr == 2015) & (df.st == 'NE'), 'om'] = 576454
+
+    # missing state segment from a KS-NE tornado in Mar 1993
+    # see https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=10326096 and
+    # https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=10334215
+    pd.options.mode.chained_assignment = None  # ignore warnings
+    ne_segment_1993 = df[(df.om == 74) & (df.yr == 1993)]
+    ne_segment_1993['st'] = 'NE'
+    ne_segment_1993['date_time'] = pd.Timestamp('1993-03-28 17:22:00')
+    ne_segment_1993[['stf', 'f1']] = [31, 65]
+    ne_segment_1993['len'] = 0.25
+    ne_segment_coord = [40.02, -99.92]
+    ne_segment_1993[['slat', 'slon']] = ne_segment_coord
+    ne_segment_1993[['elat', 'elon']] = ne_segment_coord
+    ne_segment_1993[['ns', 'sn', 'sg']] = [2, 1, 2]
+
+    par_tornado_1993 = df[(df.om == 74) & (df.yr == 1993)]
+    par_tornado_1993[['ns', 'sn', 'sg']] = [2, 0, 1]
+
+    df = pd.concat([
+        df,
+        par_tornado_1993,
+        ne_segment_1993
+    ], ignore_index=True)  # this avoids pandas.errors.InvalidIndexError
+
+    return df
 
 
 def seed_hail(session, county_ref):
     file = _get_data_file('1955-2019_hail.csv')
     records = _generate_point_records(county_ref, file)
-    session.bulk_save_objects([
-        Hail(id=idx, **rec) for idx, rec in enumerate(records, start=1)
-    ])
+    session.bulk_save_objects([Hail(id=idx, **rec) for idx, rec in enumerate(records, start=1)])
 
 
 def seed_wind(session, county_ref):
     file = _get_data_file('1955-2019_wind.csv')
     records = _generate_point_records(county_ref, file)
-    session.bulk_save_objects([
-        Wind(id=idx, **rec) for idx, rec in enumerate(records, start=1)
-    ])
+    session.bulk_save_objects([Wind(id=idx, **rec) for idx, rec in enumerate(records, start=1)])
 
 
 def _generate_point_records(county_ref, file):

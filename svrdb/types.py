@@ -133,13 +133,13 @@ class Tornado(_PathEvent):
 @strawberry.type
 class Hail(_PointEvent):
     magnitude: float
-    county: int
+    county: County
 
     @classmethod
     def _to_dict(cls, model):
         return super(Hail, cls)._to_dict(model) | dict(
             magnitude=model.magnitude,
-            county=1 # TODO; fix
+            county=County.marshal(model.county, 1)
         )
 
     @classmethod

@@ -4,13 +4,14 @@ from typing import List, Optional
 import strawberry
 
 from sqlalchemy import column, extract
+from sqlalchemy.sql.elements import ColumnClause
 
 
 @strawberry.interface
 class _GeographicalFilter:
     states: List[str] = None
 
-    def to_query(self):
+    def to_query(self) -> List[ColumnClause]:
         ret = []
         if self.states is not None:
             ret.append(column('state').in_(self.states))
@@ -25,7 +26,7 @@ class _TemporalFilter:
     hours: List[int] = None
     datetimeRange: List[Optional[datetime]] = None
 
-    def to_query(self):
+    def to_query(self) -> List[ColumnClause]:
         ret = []
         if self.datetimeRange is not None:
             ret += parse_range('datetime', self.datetimeRange)
@@ -44,10 +45,26 @@ class _TemporalFilter:
 class HailFilter(_GeographicalFilter, _TemporalFilter):
     sizeRange: List[Optional[float]] = None
 
-    def to_query(self):
+    def to_query(self) -> List[ColumnClause]:
         ret = _GeographicalFilter.to_query(self) + _TemporalFilter.to_query(self)
         if self.sizeRange is not None:
             ret += parse_range('magnitude', self.sizeRange)
+        return ret
+
+
+@strawberry.input
+class TornadoFilter(_GeographicalFilter, _TemporalFilter):
+    efs: List[int] = None
+    pathLengthRange: List[Optional[float]] = None
+
+    def to_query(self) -> List[ColumnClause]:
+        # TODO: we must query geographically by only segment in the future
+        ret = _TemporalFilter.to_query(self) + _GeographicalFilter.to_query(self)
+
+        if self.efs is not None:
+            ret.append(column('magnitude').in_(self.efs))
+        if self.pathLengthRange is not None:
+            ret += parse_range('length', self.pathLengthRange)
         return ret
 
 

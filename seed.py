@@ -217,6 +217,10 @@ def _correct_tor_records(df):
 
     df.loc[(df.yr == 1966) & (df.om.isin([13, 14])), 'f1'] = [83, 81]
 
+    # fix null island
+    df.loc[(df.elat < 10) & (df.sg > 0), 'elat'] = df.slat
+    df.loc[(df.elon > -10) & (df.sg > 0), 'elon'] = df.slon
+
     return df
 
 

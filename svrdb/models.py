@@ -1,10 +1,8 @@
-from typing import List
+from datetime import datetime
 
 from sqlalchemy import (
     Column, Integer, String, DateTime, Float, ForeignKey, create_engine, Numeric,
-    Boolean, Table)
-from datetime import datetime
-
+    Boolean)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session, declarative_mixin, declared_attr
 

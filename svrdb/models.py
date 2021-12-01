@@ -1,10 +1,11 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import (
     Column, Integer, String, DateTime, Float, ForeignKey, create_engine, Numeric,
     Boolean)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Session, declarative_mixin, declared_attr
+from sqlalchemy.orm import relationship, Session, declarative_mixin, declared_attr, aliased
 
 db_url = 'mysql+pymysql://user:password@db:3306/spc'
 engine = create_engine(db_url, echo=True, future=True)
@@ -17,7 +18,7 @@ def get_session():
 
 
 @declarative_mixin
-class _SPCEvent:
+class _Event:
     id: int = Column(Integer, primary_key=True)
     datetime: datetime = Column(DateTime, index=True, nullable=False)
     state: str = Column(String(255), index=True, nullable=False)
@@ -38,7 +39,7 @@ class County(Base):
 
 
 @declarative_mixin
-class _PointEvent(_SPCEvent):
+class _PointEvent(_Event):
     lat: float = Column(Numeric(4, 2), nullable=False, index=True)
     lon: float = Column(Numeric(5, 2), nullable=False, index=True)
 
@@ -63,7 +64,7 @@ class Wind(Base, _PointEvent):
 
 
 @declarative_mixin
-class _PathEvent(_SPCEvent):
+class _PathEvent(_Event):
     length: float = Column(Numeric(5, 2), nullable=False)
     width: float = Column(Numeric(6, 2), nullable=False)
     start_lat: float = Column(Numeric(6, 4), nullable=False, index=True)

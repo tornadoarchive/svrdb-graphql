@@ -234,7 +234,7 @@ def _correct_tor_records(df):
     # see https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=291657 and
     # https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=291659
     df.loc[(df.st == 'LA') & (df.date_time == '2011-04-26 23:56:00') & (df.sg == -9),
-           ['ns', 'sg']] = [1, 1]
+           ['sn', 'sg']] = [1, 1]
 
     return df
 

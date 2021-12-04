@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-./wait-for-it.sh db:3306 -- echo "DB is ready"
+./wait-for-it.sh db:3306 -t 60 -- echo "DB is ready"
 
 echo "Seeding database: $SEED_DB"
 

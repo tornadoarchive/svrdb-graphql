@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.4'
 services:
   app:
     build: .
@@ -11,16 +11,12 @@ services:
     environment:
       - SEED_DB
   db:
-    image: mysql:8.0
+    image: mysql:${MYSQL_VERSION}
     restart: always
     ports:
       - 3306:3306
     volumes:
       - db-vol:/var/lib/mysql
-    environment:
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'root_password'
-      MYSQL_DATABASE: 'spc'
+    env_file: .env
 volumes:
   db-vol:

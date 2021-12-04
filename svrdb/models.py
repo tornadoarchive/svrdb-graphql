@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import List
 
 from sqlalchemy import (
     Column, Integer, String, DateTime, Float, ForeignKey, create_engine, Numeric,
-    Boolean)
+    Boolean
+)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Session, declarative_mixin, declared_attr, aliased
+from sqlalchemy.orm import relationship, Session, declarative_mixin, declared_attr
 
 db_url = 'mysql+pymysql://user:password@db:3306/spc'
 engine = create_engine(db_url, echo=True, future=True)

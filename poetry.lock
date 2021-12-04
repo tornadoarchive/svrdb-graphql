@@ -149,6 +149,14 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 six = ">=1.5"
 
 [[package]]
+name = "python-decouple"
+version = "3.5"
+description = "Strict separation of settings from code."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "python-multipart"
 version = "0.0.5"
 description = "A streaming multipart parser for Python"
@@ -242,7 +250,7 @@ full = ["itsdangerous", "jinja2", "python-multipart", "pyyaml", "requests", "gra
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.87.1"
+version = "0.87.3"
 description = "A library for creating GraphQL APIs"
 category = "main"
 optional = false
@@ -257,7 +265,7 @@ python-dateutil = ">=2.7.0,<3.0.0"
 python-multipart = ">=0.0.5,<0.0.6"
 sentinel = ">=0.3.0,<0.4.0"
 starlette = {version = ">=0.13.6,<0.17.0", optional = true, markers = "extra == \"asgi\" or extra == \"debug-server\""}
-typing_extensions = ">=3.7.4,<4.0.0"
+typing_extensions = ">=3.7.4,<5.0.0"
 uvicorn = {version = ">=0.11.6,<0.16.0", optional = true, markers = "extra == \"debug-server\""}
 
 [package.extras]
@@ -298,7 +306,7 @@ standard = ["websockets (>=9.1)", "httptools (>=0.2.0,<0.3.0)", "watchgod (>=0.6
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "33cb2bad22f48ffe53abc686c99c142f8c2bcebb3e7577157be414795db82b67"
+content-hash = "7c6acd2e80faef3b1c9c25b530d4678194866a0ded0348ba771fe1f51621299d"
 
 [metadata.files]
 anyio = [
@@ -455,6 +463,10 @@ python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
 ]
+python-decouple = [
+    {file = "python-decouple-3.5.tar.gz", hash = "sha256:68e4b3fcc97e24bc90eecc514852d0bf970f4ff031f5f7a6728ddafa9afefcaf"},
+    {file = "python_decouple-3.5-py3-none-any.whl", hash = "sha256:011d3f785367c54a72cf8a07d3a7a48bb8cc1a0f8e6c70353ca5767ebf7c8c9d"},
+]
 python-multipart = [
     {file = "python-multipart-0.0.5.tar.gz", hash = "sha256:f7bb5f611fc600d15fa47b3974c8aa16e93724513b49b5f95c81e6624c83fa43"},
 ]
@@ -517,8 +529,8 @@ starlette = [
     {file = "starlette-0.16.0.tar.gz", hash = "sha256:e1904b5d0007aee24bdd3c43994be9b3b729f4f58e740200de1d623f8c3a8870"},
 ]
 strawberry-graphql = [
-    {file = "strawberry-graphql-0.87.1.tar.gz", hash = "sha256:972c03d80bd608ee4dc408c5f1960937d9eb4bf6b25aafa9404ebbfa9d06ea48"},
-    {file = "strawberry_graphql-0.87.1-py3-none-any.whl", hash = "sha256:a8956b66a9592403f7801c4aa75fcbfd5a97e025e808e0f365e6a7acf8bf7930"},
+    {file = "strawberry-graphql-0.87.3.tar.gz", hash = "sha256:f6208b58bbee035f59d8233446bc3e69d776aaf32d7113638e7709fe63772dcd"},
+    {file = "strawberry_graphql-0.87.3-py3-none-any.whl", hash = "sha256:8d7308bf78014b5747119855e808090356a794963f4b7c24b3db2a450659a756"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.2-py2-none-any.whl", hash = "sha256:d8226d10bc02a29bcc81df19a26e56a9647f8b0a6d4a83924139f4a8b01f17b7"},

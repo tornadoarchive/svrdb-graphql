@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 
 from sqlalchemy import (
     Column, Integer, String, DateTime, Float, ForeignKey, create_engine, Numeric,
@@ -6,8 +7,33 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session, declarative_mixin, declared_attr
+from decouple import config
 
-db_url = 'mysql+pymysql://user:password@db:3306/spc'
+
+class DBConfig(Enum):
+    DRIVER = config('MYSQL_DRIVER', default='pymysql')
+    IMAGE = config('DB_CONTAINER', default='db')
+    USER = config('MYSQL_USER')
+    PASSWORD = config('MYSQL_PASSWORD')
+    DB = config('MYSQL_DATABASE')
+    PORT = config('MYSQL_PORT', default=3306, cast=int)
+
+    @classmethod
+    def mysql_conn_str(cls):
+        return f'mysql+{cls.DRIVER.value}://' \
+               f'{cls.USER.value}:{cls.PASSWORD.value}@{cls.IMAGE.value}:{cls.PORT.value}/{cls.DB.value}'
+
+
+class Tables(Enum):
+    TORNADO = config('TORNADO_TABLE', default='tornado')
+    TORNADO_SEGMENT = config('TORNADO_SEGMENT_TABLE', default='tornado_segment')
+    TORNADO_SEGMENT_COUNTY = config('TORNADO_SEGMENT_COUNTY_TABLE', default='tornado_segment_county')
+    COUNTY = config('COUNTY_TABLE', default='county')
+    HAIL = config('HAIL_TABLE', default='hail')
+    WIND = config('WIND_TABLE', default='wind')
+
+
+db_url = DBConfig.mysql_conn_str()
 engine = create_engine(db_url, echo=True, future=True)
 
 Base = declarative_base()
@@ -27,6 +53,7 @@ class _Event:
     # TODO: we need to change these to numeric, but must look for max values
     loss: float = Column(Float, nullable=False)
     closs: float = Column(Float, nullable=False)
+    country: str = Column(String(255), index=True, nullable=False, default='US')
 
 
 class County(Base):

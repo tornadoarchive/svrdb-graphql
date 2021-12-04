@@ -1,7 +1,7 @@
 import os
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from svrdb.models import (
     County, Base, engine, Hail, Wind, get_session, Tornado,
@@ -111,35 +111,38 @@ def seed_tornadoes(session, county_ref):
     seg_records = seg_records_df.to_dict(orient='records')
     seg_records = [TornadoSegment(**rec) for rec in seg_records]
 
-    # associate counties - this has to be a slow loop, unfortunately
+    # associate counties - this eventually has to be a slow loop, unfortunately
     continuation_df = df[is_continuation].replace({np.nan: None})
-    continuation_df = continuation_df.merge(seg_df, on=['yr', 'om', 'st'],
-                                            suffixes=[None, '_orig'], how='left')
+    continuation_df = continuation_df.merge(seg_df[['yr', 'om', 'st', 'id']], how='left')
 
+    if continuation_df.id.isnull().any():
+        raise ValueError('Continuation county record mismatch with county! Re-evaluate the data')
+
+    # this ensures counties are inserted in order
+    continuation_df = continuation_df.sort_values(by='datetime')
+
+    county_order_tracker = {}
     seg_county_records = []
-    for _, row in seg_df.iterrows():
-        seg_id = row.id
-        county_ids = [
-            row[id_col] for id_col in [f'county_id_{i}' for i in range(1, 5)]
-            if row[id_col] is not None
-        ]
 
-        if seg_id in continuation_df.id:
-            # most times there will be only one continuation row, but making sure we
-            # account for instances there are multiple
-            for _, continuation_row in continuation_df[continuation_df.id == seg_id].iterrows():
-                county_ids += [
-                    continuation_row[id_col] for id_col in [f'county_id_{i}' for i in range(1, 5)]
-                    if continuation_row[id_col] is not None
-                ]
+    def extract_counties(src_df):
+        county_id_cols = [f'county_id_{i}' for i in range(1, 5)]
+        county_df = src_df[['id'] + county_id_cols]
 
-        for idx, cty_id in enumerate(county_ids, start=1):
-            seg_record = TornadoSegmentCounty(
-                tornado_segment_id=seg_id,
-                county_id=cty_id,
-                county_order=idx
-            )
-            seg_county_records.append(seg_record)
+        for _, county_row in county_df.iterrows():
+            seg_id = county_row.id
+            for _, county_id in county_row.loc[county_df.columns != 'id'].items():
+                if county_id is not None:
+                    county_order = county_order_tracker.get(seg_id, 0) + 1
+                    seg_record = TornadoSegmentCounty(
+                        tornado_segment_id=seg_id,
+                        county_id=county_id,
+                        county_order=county_order
+                    )
+                    seg_county_records.append(seg_record)
+                    county_order_tracker[seg_id] = county_order
+
+    extract_counties(seg_df)
+    extract_counties(continuation_df)
 
     session.bulk_save_objects(seg_records + seg_county_records)
 
@@ -220,6 +223,18 @@ def _correct_tor_records(df):
     # fix null island
     df.loc[(df.elat < 10) & (df.sg > 0), 'elat'] = df.slat
     df.loc[(df.elon > -10) & (df.sg > 0), 'elon'] = df.slon
+
+    # fix unmatched continuation records
+    df.loc[(df.st == 'IA') & (df.date_time == '1953-06-07 21:15:00') & (df.om == 265) & (df.sg == -9),
+           'om'] = 263
+    df.loc[(df.st == 'SD') & (df.date_time == '1961-06-21 14:30:00') & (df.om == 456) & (df.sg == -9),
+           'om'] = 454
+
+    # this tornado was labeled as a continuation segment when it was a full track
+    # see https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=291657 and
+    # https://www.ncdc.noaa.gov/stormevents/eventdetails.jsp?id=291659
+    df.loc[(df.st == 'LA') & (df.date_time == '2011-04-26 23:56:00') & (df.sg == -9),
+           ['ns', 'sg']] = [1, 1]
 
     return df
 

@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 
 .env
-
+# for my own personal dev
+poetry-bak.lock
 .idea
 .DS_Store
 .vscode

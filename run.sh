@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-./wait-for-it.sh db:3306 -t 60 -- echo "DB is ready"
+source .env
+
+./wait-for-it.sh --host=$DB_CONTAINER --port=$MYSQL_PORT -t 60 -- echo "DB is ready"
 
 echo "Seeding database: $SEED_DB"
 

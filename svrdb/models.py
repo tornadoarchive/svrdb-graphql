@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import Enum
 
 from sqlalchemy import (
     Column, Integer, String, DateTime, Float, ForeignKey, create_engine, Numeric,
@@ -10,9 +9,9 @@ from sqlalchemy.orm import relationship, Session, declarative_mixin, declared_at
 from decouple import config
 
 
-class DBConfig(Enum):
+class DBConfig:
     DRIVER = config('MYSQL_DRIVER', default='pymysql')
-    IMAGE = config('DB_CONTAINER', default='db')
+    CONTAINER = config('DB_CONTAINER', default='db')
     USER = config('MYSQL_USER')
     PASSWORD = config('MYSQL_PASSWORD')
     DB = config('MYSQL_DATABASE')
@@ -20,17 +19,16 @@ class DBConfig(Enum):
 
     @classmethod
     def mysql_conn_str(cls):
-        return f'mysql+{cls.DRIVER.value}://' \
-               f'{cls.USER.value}:{cls.PASSWORD.value}@{cls.IMAGE.value}:{cls.PORT.value}/{cls.DB.value}'
+        return f'mysql+{cls.DRIVER}://{cls.USER}:{cls.PASSWORD}@{cls.CONTAINER}:{cls.PORT}/{cls.DB}'
 
 
-class Tables(Enum):
-    TORNADO = config('TORNADO_TABLE', default='tornado')
-    TORNADO_SEGMENT = config('TORNADO_SEGMENT_TABLE', default='tornado_segment')
-    TORNADO_SEGMENT_COUNTY = config('TORNADO_SEGMENT_COUNTY_TABLE', default='tornado_segment_county')
-    COUNTY = config('COUNTY_TABLE', default='county')
-    HAIL = config('HAIL_TABLE', default='hail')
-    WIND = config('WIND_TABLE', default='wind')
+class Tables:
+    TORNADO = 'tornado'
+    TORNADO_SEGMENT = 'tornado_segment'
+    TORNADO_SEGMENT_COUNTY = 'tornado_segment_county'
+    COUNTY = 'county'
+    HAIL = 'hail'
+    WIND = 'wind'
 
 
 db_url = DBConfig.mysql_conn_str()
@@ -57,7 +55,7 @@ class _Event:
 
 
 class County(Base):
-    __tablename__ = 'county'
+    __tablename__ = Tables.COUNTY
     id: int = Column(Integer, primary_key=True)
     state: str = Column(String(255), nullable=False)
     state_fips: int = Column(Integer, nullable=False, index=False)
@@ -73,7 +71,7 @@ class _PointEvent(_Event):
     @declared_attr
     def county_id(cls) -> int:
         # a lot of records have missing county data
-        return Column(Integer, ForeignKey('county.id'), nullable=True)
+        return Column(Integer, ForeignKey(f'{County.__tablename__}.id'), nullable=True)
 
     @declared_attr
     def county(cls) -> County:
@@ -81,12 +79,12 @@ class _PointEvent(_Event):
 
 
 class Hail(Base, _PointEvent):
-    __tablename__ = 'hail'
+    __tablename__ = Tables.HAIL
     magnitude: float = Column(Numeric(4, 2), nullable=False, index=True)
 
 
 class Wind(Base, _PointEvent):
-    __tablename__ = 'wind'
+    __tablename__ = Tables.WIND
     magnitude: float = Column(Integer, nullable=False, index=True)
 
 
@@ -101,7 +99,7 @@ class _PathEvent(_Event):
 
 
 class Tornado(Base, _PathEvent):
-    __tablename__ = 'tornado'
+    __tablename__ = Tables.TORNADO
     magnitude: float = Column(Integer, nullable=True, index=True)
     magnitude_unk: bool = Column(Boolean, nullable=False)
 
@@ -109,18 +107,18 @@ class Tornado(Base, _PathEvent):
 
 
 class TornadoSegment(Base, _PathEvent):
-    __tablename__ = 'tornado_segment'
+    __tablename__ = Tables.TORNADO_SEGMENT
     magnitude: float = Column(Integer, nullable=True, index=True)
     magnitude_unk: bool = Column(Boolean, nullable=False)
 
-    tornado_id: int = Column(Integer, ForeignKey('tornado.id'), nullable=False)
+    tornado_id: int = Column(Integer, ForeignKey(f'{Tornado.__tablename__}.id'), nullable=False)
     counties = relationship('TornadoSegmentCounty')
 
 
 class TornadoSegmentCounty(Base):
-    __tablename__ = 'tornado_segment_county'
+    __tablename__ = Tables.TORNADO_SEGMENT_COUNTY
     id: int = Column(Integer, primary_key=True)
-    tornado_segment_id: int = Column(ForeignKey('tornado_segment.id'), nullable=False)
-    county_id: int = Column(ForeignKey('county.id'), nullable=False)
+    tornado_segment_id: int = Column(ForeignKey(f'{TornadoSegment.__tablename__}.id'), nullable=False)
+    county_id: int = Column(ForeignKey(f'{County.__tablename__}.id'), nullable=False)
     county_order: int = Column(Integer, nullable=False)
     county: County = relationship('County')

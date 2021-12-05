@@ -6,9 +6,7 @@ source .env
 
 echo "Seeding database: $SEED_DB"
 
-if [ "$SEED_DB" == "true" ]; then
-  python ./seed.py
-fi
+python seed.py
 
 echo "Starting up app!"
 strawberry server app

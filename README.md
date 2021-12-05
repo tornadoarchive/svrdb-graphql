@@ -174,7 +174,7 @@ datetimeRange: [None, '2011-04-27 12:00:00']
 ```
 *Case 4*: not a range at all
 ```
-datetimeRange: ['2011-04-27 12:00:00', None]
+datetimeRange: ['2011-04-27 12:00:00']
 -> where datetime = '2011-04-27 12:00:00'
 ```
 

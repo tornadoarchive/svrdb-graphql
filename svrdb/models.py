@@ -11,7 +11,7 @@ from decouple import config
 
 class DBConfig:
     DRIVER = config('MYSQL_DRIVER', default='pymysql')
-    CONTAINER = config('DB_CONTAINER', default='db')
+    HOST = config('DB_HOST', default='db')
     USER = config('MYSQL_USER')
     PASSWORD = config('MYSQL_PASSWORD')
     DB = config('MYSQL_DATABASE')
@@ -19,7 +19,7 @@ class DBConfig:
 
     @classmethod
     def mysql_conn_str(cls):
-        return f'mysql+{cls.DRIVER}://{cls.USER}:{cls.PASSWORD}@{cls.CONTAINER}:{cls.PORT}/{cls.DB}'
+        return f'mysql+{cls.DRIVER}://{cls.USER}:{cls.PASSWORD}@{cls.HOST}:{cls.PORT}/{cls.DB}'
 
 
 class Tables:

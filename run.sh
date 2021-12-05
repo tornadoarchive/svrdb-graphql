@@ -2,7 +2,7 @@
 
 source .env
 
-./wait-for-it.sh --host=$DB_CONTAINER --port=$MYSQL_PORT -t 60 -- echo "DB is ready"
+./wait-for-it.sh --host=$DB_HOST --port=$MYSQL_PORT -t 60 -- echo "DB is ready"
 
 echo "Seeding database: $SEED_DB"
 

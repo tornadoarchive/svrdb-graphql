@@ -6,6 +6,7 @@ services:
       - 8000:8000
     volumes:
       - ./:/app
+      - ${DATA_FILE_DIR}:/app/data
     depends_on:
       - ${DB_CONTAINER:-db}
     environment:

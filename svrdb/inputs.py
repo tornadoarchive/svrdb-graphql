@@ -53,6 +53,17 @@ class HailFilter(_GeographicalFilter, _TemporalFilter):
 
 
 @strawberry.input
+class WindFilter(_GeographicalFilter, _TemporalFilter):
+    windSpeedRange: List[Optional[int]] = None
+
+    def to_query(self) -> List[ColumnClause]:
+        ret = _GeographicalFilter.to_query(self) + _TemporalFilter.to_query(self)
+        if self.windSpeedRange is not None:
+            ret += parse_range('magnitude', self.windSpeedRange)
+        return ret
+
+
+@strawberry.input
 class TornadoFilter(_GeographicalFilter, _TemporalFilter):
     efs: List[int] = None
     pathLengthRange: List[Optional[float]] = None

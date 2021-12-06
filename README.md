@@ -151,6 +151,11 @@ Hail,
 sizeRange
 ```
 
+Wind,
+```
+windSpeedRange
+```
+
 All values associated with these attributes will be lists. 
 
 **Range attributes**: Any `*range` attributes will take a list that's converted as follows. I'll use `datetimeRange` as an example:
@@ -229,6 +234,26 @@ Pagination: TBD.
     startLon
     endLat
     endLon
+  }
+}
+```
+
+3. You want to query for times, locations, and counties of hail events >= 2" in 2019 in KS.
+```
+{
+  hail(filter: {
+    states:["KS"],
+    years:[2019],
+  	sizeRange: [2.0, null]
+  }) {
+    magnitude
+    datetime
+    lat
+    lon
+    county {
+      name
+      state
+    }
   }
 }
 ```

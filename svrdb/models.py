@@ -85,7 +85,7 @@ class Hail(Base, _PointEvent):
 
 class Wind(Base, _PointEvent):
     __tablename__ = Tables.WIND
-    magnitude: float = Column(Integer, nullable=False, index=True)
+    magnitude: int = Column(Integer, nullable=False, index=True)
 
 
 @declarative_mixin

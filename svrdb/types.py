@@ -4,11 +4,31 @@ from datetime import datetime
 from typing import List
 
 from .fetch import fetch_events
-from .inputs import HailFilter, TornadoFilter
+from .inputs import HailFilter, TornadoFilter, WindFilter
 from .models import (
     Hail as HailModel,
     Tornado as TornadoModel,
+    Wind as WindModel
 )
+
+
+@strawberry.type
+class County:
+    order: int
+    state: str
+    name: str
+    state_fips: int
+    county_fips: int
+
+    @classmethod
+    def marshal(cls, model, county_order):
+        return cls(
+            state=model.state,
+            name=model.county,
+            state_fips=model.state_fips,
+            county_fips=model.county_fips,
+            order=county_order
+        )
 
 
 @strawberry.interface
@@ -42,12 +62,14 @@ class _Event:
 class _PointEvent(_Event):
     lat: float
     lon: float
+    county: County
 
     @classmethod
     def _to_dict(cls, model):
         return super(_PointEvent, cls)._to_dict(model) | dict(
             lat=model.lat,
-            lon=model.lon
+            lon=model.lon,
+            county=County.marshal(model.county, 1)
         )
 
 
@@ -69,25 +91,6 @@ class _PathEvent(_Event):
             start_lon=model.start_lon,
             end_lat=model.end_lat,
             end_lon=model.end_lon
-        )
-
-
-@strawberry.type
-class County:
-    order: int
-    state: str
-    name: str
-    state_fips: int
-    county_fips: int
-
-    @classmethod
-    def marshal(cls, model, county_order):
-        return cls(
-            state=model.state,
-            name=model.county,
-            state_fips=model.state_fips,
-            county_fips=model.county_fips,
-            order=county_order
         )
 
 
@@ -133,19 +136,35 @@ class Tornado(_PathEvent):
 @strawberry.type
 class Hail(_PointEvent):
     magnitude: float
-    county: County
 
     @classmethod
     def _to_dict(cls, model):
         return super(Hail, cls)._to_dict(model) | dict(
-            magnitude=model.magnitude,
-            county=County.marshal(model.county, 1)
+            magnitude=model.magnitude
         )
 
     @classmethod
     def fetch(cls, filter: HailFilter = None):
         if filter is not None:
             queried = fetch_events(HailModel, filter.to_query())
+            return [cls.marshal(event) for event in queried]
+        return []
+
+
+@strawberry.type
+class Wind(_PointEvent):
+    magnitude: int
+
+    @classmethod
+    def _to_dict(cls, model):
+        return super(Wind, cls)._to_dict(model) | dict(
+            magnitude=model.magnitude
+        )
+
+    @classmethod
+    def fetch(cls, filter: WindFilter = None):
+        if filter is not None:
+            queried = fetch_events(WindModel, filter.to_query())
             return [cls.marshal(event) for event in queried]
         return []
 
@@ -159,3 +178,7 @@ class Query:
     @strawberry.field
     def hail(self, filter: HailFilter = None) -> List[Hail]:
         return Hail.fetch(filter)
+
+    @strawberry.field
+    def wind(self, filter: WindFilter = None) -> List[Wind]:
+        return Wind.fetch(filter)

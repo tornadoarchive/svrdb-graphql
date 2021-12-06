@@ -169,12 +169,12 @@ datetimeRange: ['2011-04-27 12:00:00', '2011-04-28 12:00:00']
 
 *Case 2*: with only lower bound
 ```
-datetimeRange: ['2011-04-27 12:00:00', None]
+datetimeRange: ['2011-04-27 12:00:00', null]
 -> where datetime >= '2011-04-27 12:00:00'
 ```
 *Case 3*: with only upper bound
 ```
-datetimeRange: [None, '2011-04-27 12:00:00']
+datetimeRange: [null, '2011-04-27 12:00:00']
 -> where datetime <= '2011-04-27 12:00:00'
 ```
 *Case 4*: not a range at all
@@ -217,7 +217,7 @@ Pagination: TBD.
 }
 ```
 
-2. You want to display all (E)F4-F5 in Oklahoma history. You don't care about the segments, you just want the complete tornado tracks and aggregate information the same as above. (TODO: update to query states on segment)
+2. You want to display all (E)F4-F5 in Oklahoma history. You don't care about the segments, you just want the complete tornado tracks and aggregate information the same as above.
 ```
 {
   tornado(filter: {
@@ -244,7 +244,7 @@ Pagination: TBD.
   hail(filter: {
     states:["KS"],
     years:[2019],
-  	sizeRange: [2.0, null]
+    sizeRange: [2.0, null]
   }) {
     magnitude
     datetime

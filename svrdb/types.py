@@ -1,15 +1,11 @@
-import strawberry
-
 from datetime import datetime
 from typing import List
 
-from .fetch import fetch_events
+import strawberry
+
+from .fetch import TornadoFetch, HailFetch, WindFetch
 from .inputs import HailFilter, TornadoFilter, WindFilter
-from .models import (
-    Hail as HailModel,
-    Tornado as TornadoModel,
-    Wind as WindModel
-)
+from .models import get_session
 
 
 @strawberry.type
@@ -127,10 +123,9 @@ class Tornado(_PathEvent):
 
     @classmethod
     def fetch(cls, filter: TornadoFilter = None):
-        if filter is not None:
-            queried = fetch_events(TornadoModel, filter.to_query())
+        with get_session() as session:
+            queried = TornadoFetch(session).fetch(filter, order_by='datetime')
             return [cls.marshal(event) for event in queried]
-        return []
 
 
 @strawberry.type
@@ -145,10 +140,9 @@ class Hail(_PointEvent):
 
     @classmethod
     def fetch(cls, filter: HailFilter = None):
-        if filter is not None:
-            queried = fetch_events(HailModel, filter.to_query())
+        with get_session() as session:
+            queried = HailFetch(session).fetch(filter, order_by='datetime')
             return [cls.marshal(event) for event in queried]
-        return []
 
 
 @strawberry.type
@@ -163,10 +157,9 @@ class Wind(_PointEvent):
 
     @classmethod
     def fetch(cls, filter: WindFilter = None):
-        if filter is not None:
-            queried = fetch_events(WindModel, filter.to_query())
+        with get_session() as session:
+            queried = WindFetch(session).fetch(filter, order_by='datetime')
             return [cls.marshal(event) for event in queried]
-        return []
 
 
 @strawberry.type

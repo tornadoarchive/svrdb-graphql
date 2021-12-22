@@ -9,5 +9,5 @@ echo "Seeding database: $SEED_DB"
 python seed.py
 
 echo "Starting up app!"
-strawberry server app
-
+#strawberry server app
+uvicorn app:app --host 0.0.0.0 --port 8000

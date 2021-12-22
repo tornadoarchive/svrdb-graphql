@@ -338,7 +338,7 @@ standard = ["httptools (>=0.2.0,<0.4.0)", "watchgod (>=0.6)", "python-dotenv (>=
 
 [metadata]
 lock-version = "1.1"
-python-versions = "3.9.1"
+python-versions = "^3.9"
 content-hash = "bda0ea33c295fd6e744e94135a3546c5a222786c1b3fcbf0c96fbea0b865c21c"
 
 [metadata.files]

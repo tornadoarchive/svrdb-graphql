@@ -12,13 +12,16 @@ from decouple import config
 class DBConfig:
     DRIVER = config('MYSQL_DRIVER', default='pymysql')
     HOST = config('DB_HOST', default='db')
-    USER = config('MYSQL_USER')
-    PASSWORD = config('MYSQL_PASSWORD')
-    DB = config('MYSQL_DATABASE')
+    USER = config('MYSQL_USER', default='user')
+    PASSWORD = config('MYSQL_PASSWORD', default='pw')
+    DB = config('MYSQL_DATABASE', default='db')
     PORT = config('MYSQL_PORT', default=3306, cast=int)
 
     @classmethod
     def mysql_conn_str(cls):
+        db_url_override = config('DATABASE_URL', default=None)
+        if db_url_override:
+            return db_url_override
         return f'mysql+{cls.DRIVER}://{cls.USER}:{cls.PASSWORD}@{cls.HOST}:{cls.PORT}/{cls.DB}'
 
 

@@ -265,11 +265,11 @@ To seed on the remote database server, you must set the following environment va
 ```
 DATABASE_URL=mysql+pymysql://<mysql connection string from heroku> 
 SEED_DB=<tornado or all>
-DOCKERIZED=false 
+RUN_REMOTE=true 
 DATA_FILE_DIR=<your data file directory>
 ```
 
-Note that the connection string from Heroku will not contain the piece with the `pymysql` driver, you must add that in manually. `DOCKERIZED=false` will tell the script to load from the path on your computer, not the docker path.
+Note that the connection string from Heroku will not contain the piece with the `pymysql` driver, you must add that in manually. `RUN_REMOTE=true` will tell the script to load from the path on your computer, not the docker path.
 
 ## Learn more
 Learn more about GraphQL capabilities here: https://graphql.org/learn/

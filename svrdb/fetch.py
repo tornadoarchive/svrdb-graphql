@@ -1,10 +1,10 @@
 from typing import Any
 
 from sqlalchemy import column, extract
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from .inputs import SpatialFilter, TemporalFilter, TornadoFilter, HailFilter, WindFilter
-from .models import Base, Tornado, TornadoSegment, Hail, Wind
+from .models import Base, Tornado, TornadoSegment, Hail, Wind, TornadoSegmentCounty
 
 
 class _ModelFetch:
@@ -75,6 +75,17 @@ class TornadoFetch(_SpatialFetch, _TemporalFetch):
             others += parse_range('length', filter.pathLengthRange)
 
         return temporal_wheres + spatial_wheres + others
+
+    def fetch(self, filter: TornadoFilter, order_by: str):
+        if filter is None:
+            raise ValueError('TornadoFilter must not not be null!')
+
+        return self._session.query(self._model)\
+            .options(selectinload(Tornado.segments)
+                     .joinedload(TornadoSegment.counties)
+                     .joinedload(TornadoSegmentCounty.county))\
+            .where(*self._where_args(filter))\
+            .order_by(order_by).all()
 
 
 class HailFetch(_SpatialFetch, _TemporalFetch):

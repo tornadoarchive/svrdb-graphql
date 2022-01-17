@@ -61,8 +61,8 @@ class County(Base):
     __tablename__ = Tables.COUNTY
     id: int = Column(Integer, primary_key=True)
     state: str = Column(String(255), nullable=False)
-    state_fips: int = Column(Integer, nullable=False, index=False)
-    county_fips: int = Column(Integer, nullable=False, index=False)
+    state_fips: int = Column(Integer, nullable=False)
+    county_fips: int = Column(Integer, nullable=False)
     county: str = Column(String(255), nullable=False)
 
 

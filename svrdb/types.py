@@ -4,7 +4,7 @@ from typing import List
 import strawberry
 
 from .fetch import TornadoFetch, HailFetch, WindFetch
-from .inputs import HailFilter, TornadoFilter, WindFilter
+from .inputs import HailFilter, TornadoFilter, WindFilter, Pagination
 from .models import get_session
 
 
@@ -122,9 +122,9 @@ class Tornado(_PathEvent):
         )
 
     @classmethod
-    def fetch(cls, filter: TornadoFilter = None):
+    def fetch(cls, filter: TornadoFilter = None, pagination: Pagination = None):
         with get_session() as session:
-            queried = TornadoFetch(session).fetch(filter, order_by='datetime')
+            queried = TornadoFetch(session).fetch(filter, order_by='datetime', pagination=pagination)
             return [cls.marshal(event) for event in queried]
 
 
@@ -139,9 +139,9 @@ class Hail(_PointEvent):
         )
 
     @classmethod
-    def fetch(cls, filter: HailFilter = None):
+    def fetch(cls, filter: HailFilter = None, pagination: Pagination = None):
         with get_session() as session:
-            queried = HailFetch(session).fetch(filter, order_by='datetime')
+            queried = HailFetch(session).fetch(filter, order_by='datetime', pagination=pagination)
             return [cls.marshal(event) for event in queried]
 
 
@@ -156,22 +156,22 @@ class Wind(_PointEvent):
         )
 
     @classmethod
-    def fetch(cls, filter: WindFilter = None):
+    def fetch(cls, filter: WindFilter = None, pagination: Pagination = None):
         with get_session() as session:
-            queried = WindFetch(session).fetch(filter, order_by='datetime')
+            queried = WindFetch(session).fetch(filter, order_by='datetime', pagination=pagination)
             return [cls.marshal(event) for event in queried]
 
 
 @strawberry.type
 class Query:
     @strawberry.field
-    def tornado(self, filter: TornadoFilter = None) -> List[Tornado]:
-        return Tornado.fetch(filter)
+    def tornado(self, filter: TornadoFilter = None, pagination: Pagination = None) -> List[Tornado]:
+        return Tornado.fetch(filter, pagination)
 
     @strawberry.field
-    def hail(self, filter: HailFilter = None) -> List[Hail]:
-        return Hail.fetch(filter)
+    def hail(self, filter: HailFilter = None, pagination: Pagination = None) -> List[Hail]:
+        return Hail.fetch(filter, pagination)
 
     @strawberry.field
-    def wind(self, filter: WindFilter = None) -> List[Wind]:
-        return Wind.fetch(filter)
+    def wind(self, filter: WindFilter = None, pagination: Pagination = None) -> List[Wind]:
+        return Wind.fetch(filter, pagination)

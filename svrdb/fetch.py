@@ -3,7 +3,7 @@ from typing import Any
 from sqlalchemy import column, extract
 from sqlalchemy.orm import Session, selectinload
 
-from .inputs import SpatialFilter, TemporalFilter, TornadoFilter, HailFilter, WindFilter
+from .inputs import SpatialFilter, TemporalFilter, TornadoFilter, HailFilter, WindFilter, Pagination
 from .models import Base, Tornado, TornadoSegment, Hail, Wind, TornadoSegmentCounty
 
 
@@ -15,10 +15,12 @@ class _ModelFetch:
     def _where_args(self, _filter: Any):
         return []
 
-    def fetch(self, filter: Any, order_by: str):
+    def fetch(self, filter: Any, order_by: str, pagination: Pagination):
+        limit, offset = _to_limit_and_offset(pagination)
         if filter is None:
-            return self._session.query(self._model).order_by(order_by)
-        return self._session.query(self._model).where(*self._where_args(filter)).order_by(order_by)
+            return self._session.query(self._model).order_by(order_by).limit(limit).offset(offset)
+        return self._session.query(self._model)\
+            .where(*self._where_args(filter)).order_by(order_by).limit(limit).offset(offset)
 
 
 class _SpatialFetch(_ModelFetch):
@@ -76,16 +78,18 @@ class TornadoFetch(_SpatialFetch, _TemporalFetch):
 
         return temporal_wheres + spatial_wheres + others
 
-    def fetch(self, filter: TornadoFilter, order_by: str):
+    def fetch(self, filter: TornadoFilter, order_by: str, pagination: Pagination):
         if filter is None:
             raise ValueError('TornadoFilter must not not be null!')
+
+        limit, offset = _to_limit_and_offset(pagination)
 
         return self._session.query(self._model)\
             .options(selectinload(Tornado.segments)
                      .joinedload(TornadoSegment.counties)
                      .joinedload(TornadoSegmentCounty.county))\
             .where(*self._where_args(filter))\
-            .order_by(order_by).all()
+            .order_by(order_by).limit(limit).offset(offset)
 
 
 class HailFetch(_SpatialFetch, _TemporalFetch):
@@ -128,3 +132,9 @@ def parse_range(col, lst):
             )
         return ret
 
+
+def _to_limit_and_offset(pagination):
+    if not pagination:
+        return 1000, 0
+
+    return pagination.limit or 1000, pagination.offset or 0

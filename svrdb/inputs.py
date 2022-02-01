@@ -32,3 +32,9 @@ class WindFilter(SpatialFilter, TemporalFilter):
 class TornadoFilter(SpatialFilter, TemporalFilter):
     efs: List[int] = None
     pathLengthRange: List[Optional[float]] = None
+
+
+@strawberry.input
+class Pagination:
+    offset: Optional[int]
+    limit: Optional[int]
